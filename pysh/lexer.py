@@ -1,43 +1,108 @@
-class Lexer:
+"""
+lexer for pysh shell
+
+Token types:
+- COMMAND: First word in a command sequence (e.g., ls, echo, mkdir)
+- ARG: Arguments for commands (e.g., -l, file.txt, ^car)
+- STRING_LITERAL: Quoted strings preserving spaces ("Hello World")
+- PIPE: | operator for piping commands
+- REDIRECT_OUT: > operator for output redirection
+- REDIRECT_OUT_APPEND: >> operator for appending output
+- REDIRECT_IN: < operator for input redirection
+- SEMICOLON: ; to separate multiple commands
+- BACKGROUND: & for background execution
+- VARIABLE: $VAR environment variables
+- COMMENT: # and rest of line (ignored like us :)
+"""
+
+class Token:
+    def __init__(self, typ, value):
+        self.type = typ
+        self.value = value
     
+    def __repr__(self):
+        return f"{self.type}({self.value})"
+
+class Lexer:
     def __init__(self):
-        self.tokens = []
+        pass
     
     def tokenize(self, inp: str):
-        # Strip leading and trailing spaces
         inp = inp.strip()
-        
         i = 0
+        tokens = []
+
         while i < len(inp):
-            # Skip spaces
-            if inp[i] == ' ':
+            if inp[i].isspace():
                 i += 1
                 continue
-            
-            # Handle quoted strings
-            if inp[i] == '"':
-                # Find the matching closing quote
+
+            # Quoted strings
+            if inp[i] in ('"', "'"):
+                quote_char = inp[i]
                 j = i + 1
-                while j < len(inp) and inp[j] != '"':
+                while j < len(inp) and inp[j] != quote_char:
                     j += 1
-                
-                # If we found a closing quote, extract the string
                 if j < len(inp):
-                    # Add the quoted string as one token (including the quotes)
-                    self.tokens.append(inp[i:j+1])
+                    tokens.append(Token("STRING_LITERAL", inp[i+1:j]))
                     i = j + 1
                 else:
-                    # Unclosed quote, treat as regular text
-                    self.tokens.append(inp[i:])
-                    break
-            else:
-                # Regular tokenization by spaces
+                    # Unclosed quote
+                    tokens.append(Token("STRING_LITERAL", inp[i+1:]))
+                    i = len(inp)
+            
+            # Pipe
+            elif inp[i] == '|' and i+1 < len(inp) and inp[i+1] == '|':
+                tokens.append(Token("PIPE", "||"))
+                i += 2
+            elif inp[i] == '|':
+                tokens.append(Token("PIPE", "|"))
+                i += 1
+            
+            # Redirection
+            elif inp[i] == '>' and i+1 < len(inp) and inp[i+1] == '>':
+                tokens.append(Token("REDIRECT_OUT_APPEND", ">>"))
+                i += 2
+            elif inp[i] == '>':
+                tokens.append(Token("REDIRECT_OUT", ">"))
+                i += 1
+            elif inp[i] == '<':
+                tokens.append(Token("REDIRECT_IN", "<"))
+                i += 1
+            
+            # Semicolon
+            elif inp[i] == ';':
+                tokens.append(Token("SEMICOLON", ";"))
+                i += 1
+            
+            # Background
+            elif inp[i] == '&':
+                tokens.append(Token("BACKGROUND", "&"))
+                i += 1
+
+            # Variable
+            elif inp[i] == '$':
                 start = i
-                while i < len(inp) and inp[i] != ' ':
+                i += 1
+                while i < len(inp) and (inp[i].isalnum() or inp[i] == '_'):
                     i += 1
-                # Add the token (excluding leading/trailing spaces)
-                self.tokens.append(inp[start:i])
+                tokens.append(Token("VARIABLE", inp[start:i]))
+            
+            # Comment
+            elif inp[i] == '#':
+                break  # ignore rest of line
+            
+            # Regular word
+            else:
+                start = i
+                while i < len(inp) and not inp[i].isspace() and inp[i] not in '|&;<>':
+                    i += 1
+                word = inp[start:i]
+                # Determine type
+                if len(tokens) == 0 or tokens[-1].type in ("PIPE", "SEMICOLON"):
+                    token_type = "COMMAND"
+                else:
+                    token_type = "ARG"
+                tokens.append(Token(token_type, word))
         
-        return self.tokens
-    
-    pass
+        return tokens
