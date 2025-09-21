@@ -26,80 +26,45 @@ class Executor:
         pass
     
     def execute(self, tree: ParseTree):
-        """
-        execute all commands in the parse tree.
-        """
+        """Execute all commands in the parse tree."""
         if tree.root is None:
             return
-            
-        # Traverse the tree and execute commands
         self._execute_node(tree.root)
     
     def _execute_node(self, node: Node):
-        """
-        recursively execute nodes in the parse tree.
-        
-        Args:
-            node (Node): the current node to execute
-        """
-        # If this is a Command node, execute it
+        """Recursively execute nodes in the parse tree."""
         if node.name == "Command":
             self._execute_command(node)
         else:
-            # Recursively execute children for other node types
-            for child in node.children:
+            for child in getattr(node, "children", []):
                 self._execute_node(child)
     
     def _execute_command(self, command_node: Node):
-        """
-        Execute a single command node.
-        
-        Args:
-            command_node (Node): The command node to execute
-        """
+        """Execute a single command node."""
         if not command_node.children:
             return
-            
-        # Get the command name (first child)
+        
         command_name_node = command_node.children[0]
         command_name = command_name_node.token.value
+        args = [child.token.value for child in command_node.children[1:]]
         
-        # Collect all arguments (all children except the first one)
-        args = []
-        for arg_node in command_node.children[1:]:
-            args.append(arg_node.token.value)
-        
-        # Execute the command based on whether it's built-in or external
         if command_name in BUILTIN_COMMANDS:
             self._execute_builtin_command(command_name, args)
         else:
             self._execute_external_command(command_name, args)
     
     def _execute_builtin_command(self, command_name: str, args: list):
-        """
-        Execute built-in commands using Python standard library functions.
-        
-        Args:
-            command_name (str): Name of the built-in command
-            args (list): List of arguments for the command
-        """
+        """Execute built-in commands."""
         try:
             if command_name == "cd":
-                # Change directory
-                if not args:
-                    # If no argument, change to home directory
-                    os.chdir(os.path.expanduser("~"))
-                else:
-                    # Change to specified directory
-                    os.chdir(args[0])
+                path = args[0] if args else os.path.expanduser("~")
+                os.chdir(path)
                 print(f"Changed to directory: {os.getcwd()}")
                 
             elif command_name == "pwd":
-                # Print working directory
                 print(os.getcwd())
                 
             elif command_name == "mkdir":
-                # Create directories
                 if not args:
                     raise RuntimeError("mkdir: missing operand")
                 for dir_path in args:
@@ -107,7 +72,6 @@ class Executor:
                 print(f"Created directories: {', '.join(args)}")
                 
             elif command_name == "rm":
-                # Remove files/directories
                 if not args:
                     raise RuntimeError("rm: missing operand")
                 for item in args:
@@ -121,59 +85,54 @@ class Executor:
                         print(f"rm: cannot remove '{item}': No such file or directory")
                         
             elif command_name == "ls":
-                # List directory contents
-                if not args:
-                    # List current directory
-                    items = os.listdir(".")
-                else:
-                    # List specified path(s)
-                    items = []
-                    for path in args:
-                        if os.path.isdir(path):
-                            items.extend([os.path.join(path, item) for item in os.listdir(path)])
-                        else:
-                            items.append(path)
+                show_all = False
+                paths = []
+
+                # Separate options and paths
+                for arg in args:
+                    if arg.startswith("-"):
+                        if "a" in arg:
+                            show_all = True
+                    else:
+                        paths.append(arg)
+
+                # Default to current directory if no path
+                if not paths:
+                    paths = ["."]
                 
-                # Print items sorted alphabetically
+                items = []
+                for path in paths:
+                    if os.path.isdir(path):
+                        for f in os.listdir(path):
+                            if show_all or f not in (".DS_Store", ".localized"):
+                                items.append(os.path.join(path, f) if path != "." else f)
+                    elif os.path.exists(path):
+                        items.append(path)
+                    else:
+                        print(f"ls: cannot access '{path}': No such file or directory")
+
                 for item in sorted(items):
                     print(item)
                     
         except Exception as e:
-            # Catch and display errors without exiting the REPL
             print(f"Error executing {command_name}: {e}")
     
     def _execute_external_command(self, command_name: str, args: list):
-        """
-        Execute external commands using subprocess.run().
-        
-        Args:
-            command_name (str): Name of the external command
-            args (list): List of arguments for the command
-        """
+        """Execute external commands using subprocess."""
         try:
-            # Build the command with arguments
             cmd = [command_name] + args
-            
-            # Execute the command and capture output
             result = subprocess.run(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                check=False  # Don't raise exception on non-zero exit codes
+                check=False
             )
-            
-            # Print stdout if there is any
             if result.stdout:
                 print(result.stdout, end='')
-            
-            # Print stderr if there is any
             if result.stderr:
                 print(result.stderr, end='')
-                
         except FileNotFoundError:
-            # Command not found
             print(f"Command not found: {command_name}")
         except Exception as e:
-            # Catch and display other errors without exiting the REPL
             print(f"Error executing {command_name}: {e}")
