@@ -4,10 +4,15 @@ import parser
 import checker
 import executor
 import os
+import atexit
+import readline   # history (arrow key navigation)
+from pathlib import Path
 
 # ANSI color for light grey
 LOG_COLOR = "\033[90m"
 RESET_COLOR = "\033[0m"
+
+HISTORY_FILE = Path.home() / ".pysh_history"
 
 class REPL:
     def __init__(self):
@@ -16,6 +21,19 @@ class REPL:
         self.checker = checker.SemanticChecker()
         self.executor = executor.Executor()
         self.show_logs = False  # Start with logs off
+
+        # Load history file if it exists
+        if HISTORY_FILE.exists():
+            readline.read_history_file(HISTORY_FILE)
+
+        # Save history automatically when pysh exits
+        atexit.register(self._save_history)
+
+    def _save_history(self):
+        try:
+            readline.write_history_file(HISTORY_FILE)
+        except Exception as e:
+            print(f"Warning: could not save history: {e}")
 
     def run(self):
         while True:
