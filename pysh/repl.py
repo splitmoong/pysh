@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 import lexer
 import parser
+import checker
+
+import os
 
 class REPL:
     def __init__(self):
         self.lexer = lexer.Lexer()
         self.parser = parser.Parser()
+        self.checker = checker.SemanticChecker()
 
     def run(self):
         while True:
@@ -13,6 +17,16 @@ class REPL:
                 # Show prompt and read input
                 inp = input("pysh$ ")
                 if not inp.strip():
+                    continue
+                
+                # Exit command
+                if inp.strip() == "exit":
+                    print("bye 👋")
+                    break
+                
+                # Clear command
+                if inp.strip() == "clear":
+                    os.system("clear")  # works on Linux/macOS
                     continue
 
                 # Tokenize input
@@ -22,6 +36,13 @@ class REPL:
                 # Parse tokens
                 self.parser.parse(tokens)
                 self.parser.tree.display()
+                
+                # Semantic check
+                try:
+                    self.checker.check(self.parser.tree)
+                except RuntimeError as e:
+                    print(f"Semantic error: {e}")
+                    continue  # don't exit the loop
 
             except KeyboardInterrupt:
                 print()  # newline on Ctrl+C
