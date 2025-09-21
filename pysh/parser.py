@@ -21,21 +21,25 @@ class ParseTree:
     GRAY = "\033[90m"
     RESET = "\033[0m"
 
-    def display(self, node=None, indent=0):
+    def display(self, node=None, prefix="", is_last=True):
+        """
+        Display the parse tree in a visually structured top-down tree format.
+        Supports multiple children per node.
+        """
         if node is None:
             node = self.root
         if node is None:
             return
 
-        # print node in light grey
-        print(f"{self.GRAY}" + "    " * indent + str(node) + f"{self.RESET}")
+        # Print the current node
+        connector = "└── " if is_last else "├── "
+        print(f"{self.GRAY}{prefix}{connector}{str(node)}{self.RESET}")
 
-        # recursively display all children
-        for child in getattr(node, "children", []):
-            self.display(child, indent + 1)
-
-    def __repr__(self):
-        return f"ParseTree(root={self.root})"
+        # Prepare the prefix for children
+        if hasattr(node, "children") and node.children:
+            new_prefix = prefix + ("    " if is_last else "│   ")
+            for i, child in enumerate(node.children):
+                self.display(child, new_prefix, i == len(node.children) - 1)    
 
 
 class Parser:

@@ -3,9 +3,10 @@
 **pysh** is a lightweight, python-based terminal shell inspired by Bash.
  It allows users to execute built-in commands, system commands, and will be extended with functionality like command history, autocomplete, and AI-driven natural language interpretation.
 
-Pysh is designed to be **cross-platform**, with a primary focus on **Linux and macOS**. Windows support is available via Python and a terminal emulator (e.g., PowerShell or Windows Terminal).
-
 ---
+
+<img width="2406" height="1448" alt="image" src="https://github.com/user-attachments/assets/227fffce-33a8-437b-ac8a-5f402fa888ac" />
+
 
 ## ✨ Features
 
@@ -16,6 +17,8 @@ Pysh is designed to be **cross-platform**, with a primary focus on **Linux and m
 - **Easily extendable** to support file operations, system monitoring, and AI-driven commands.
 
 ---
+
+https://github.com/user-attachments/assets/5c380260-1183-4b57-8d15-dd14218255b4
 
 ## 🚀 Installation
 
