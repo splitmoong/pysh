@@ -2,10 +2,11 @@
 
 **pysh** is python-based terminal shell inspired by bash.
  It allows users to execute built-in commands, system commands, cycle through command history and will be extended with AI-driven natural language interpretation.
- 
+
 ---
 
-https://github.com/user-attachments/assets/5c380260-1183-4b57-8d15-dd14218255b4
+https://github.com/user-attachments/assets/d382e86e-1bc4-4dae-8407-5d45d3b07800
+
 
 ## Features
 
@@ -40,7 +41,7 @@ https://github.com/user-attachments/assets/5c380260-1183-4b57-8d15-dd14218255b4
   - Use up and down arrows to cycle through previous commands. 
   - Works even after exiting pysh, stored externally at ~/.pysh_history.
 
-- **Modular architecture**
+- **Modular**
   - Each core piece of the shell (lexer, parser, checker, executor) and the commands live in their own files.
 
 ---
