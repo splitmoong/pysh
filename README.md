@@ -5,8 +5,7 @@
 
 ---
 
-<img width="2406" height="1448" alt="image" src="https://github.com/user-attachments/assets/227fffce-33a8-437b-ac8a-5f402fa888ac" />
-
+https://github.com/user-attachments/assets/5c380260-1183-4b57-8d15-dd14218255b4
 
 ## ✨ Features
 
@@ -17,8 +16,6 @@
 - **Easily extendable** to support file operations, system monitoring, and AI-driven commands.
 
 ---
-
-https://github.com/user-attachments/assets/5c380260-1183-4b57-8d15-dd14218255b4
 
 ## 🚀 Installation
 
