@@ -70,5 +70,5 @@ def run(args=None):
             time.sleep(0.5)
 
     except KeyboardInterrupt:
-        print("\n")
+        print("\nexiting cpu monitor")
         return

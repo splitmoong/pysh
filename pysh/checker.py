@@ -9,8 +9,8 @@ import os
 import shutil
 from parser import Node, ParseTree
 
-# Define built-in commands for mandatory requirements
-BUILTIN_COMMANDS = {"cd", "cpu", "ls", "mkdir", "pwd", "rm"}
+# define built-in commands for mandatory requirements
+BUILTIN_COMMANDS = {"cd", "cpu", "disk", "ls", "mem", "mkdir", "pwd", "rm"}
 
 class SemanticChecker:
     def __init__(self):
