@@ -1,6 +1,6 @@
 import subprocess
 from parser import Node, ParseTree
-from commands import cd, ls, mkdir, pwd, rm
+from commands import cd, ls, mkdir, pwd, rm, cpu
 
 # map of built-in command names to their module run() functions
 BUILTIN_COMMANDS = {
@@ -8,7 +8,8 @@ BUILTIN_COMMANDS = {
     "ls": ls.run,
     "mkdir": mkdir.run,
     "pwd": pwd.run,
-    "rm": rm.run
+    "rm": rm.run,
+    "cpu": cpu.run
 }
 
 class Executor:
