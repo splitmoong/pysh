@@ -3,6 +3,10 @@
 **pysh** is python-based terminal shell inspired by bash.
  It allows users to execute built-in commands, system commands, cycle through command history and will be extended with AI-driven natural language interpretation.
 
+### videos (pysh demo & Codemate.ai Builder)
+
+https://drive.google.com/drive/folders/1Pjl8n9iTkAs59wZhGKMv-5qqqct0PgPE?usp=sharing
+
 ---
 
 https://github.com/user-attachments/assets/d382e86e-1bc4-4dae-8407-5d45d3b07800
