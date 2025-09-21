@@ -18,18 +18,20 @@ class Node:
         return f"{self.name}"
 
 class ParseTree:
-    def __init__(self):
-        self.root = None
+    GRAY = "\033[90m"
+    RESET = "\033[0m"
 
     def display(self, node=None, indent=0):
-        """Display the tree top-down in a readable format"""
         if node is None:
             node = self.root
         if node is None:
             return
 
-        print("    " * indent + str(node))
-        for child in node.children:
+        # print node in light grey
+        print(f"{self.GRAY}" + "    " * indent + str(node) + f"{self.RESET}")
+
+        # recursively display all children
+        for child in getattr(node, "children", []):
             self.display(child, indent + 1)
 
     def __repr__(self):
