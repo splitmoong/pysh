@@ -2,6 +2,7 @@
 import lexer
 import parser
 import checker
+import executor
 
 import os
 
@@ -10,6 +11,7 @@ class REPL:
         self.lexer = lexer.Lexer()
         self.parser = parser.Parser()
         self.checker = checker.SemanticChecker()
+        self.executor = executor.Executor()
 
     def run(self):
         while True:
@@ -20,8 +22,8 @@ class REPL:
                     continue
                 
                 # Exit command
-                if inp.strip() == "exit":
-                    print("bye 👋")
+                if inp.strip() == "bye":
+                    print("bye :)")
                     break
                 
                 # Clear command
@@ -43,6 +45,9 @@ class REPL:
                 except RuntimeError as e:
                     print(f"Semantic error: {e}")
                     continue  # don't exit the loop
+                
+                # Execute the command
+                self.executor.execute(self.parser.tree)
 
             except KeyboardInterrupt:
                 print()  # newline on Ctrl+C
