@@ -1,36 +1,83 @@
 """
 parser for pysh shell
-
-called from repl.py, the parse function accepts a list of token objects and generates a parse tree for the same.
+called from repl.py, the parse function accepts a list of token objects and generates a parse tree.
 """
-#a token object class
+
 from lexer import Token
 
 class Node:
-    def __init__(self, token : Token):
-        self.token = token
-        self.left = None
-        self.right = None
-        
-''' Grammar for pysh
+    """a node that can have multiple children"""
+    def __init__(self, name, token=None):
+        self.name = name        # Name of the grammar variable or token type
+        self.token = token      # Token object (for terminals)
+        self.children = []      # List of child nodes
 
-    Statement -> Command
+    def __repr__(self):
+        if self.token:
+            return f"{self.name}({self.token.value})"
+        return f"{self.name}"
 
-    Command -> COMMAND_NAME (ARG)*
-
-'''
-        
 class ParseTree:
     def __init__(self):
         self.root = None
-        pass
-    
-'''a recursive descent parser to build the parse tree'''
+
+    def display(self, node=None, indent=0):
+        """Display the tree top-down in a readable format"""
+        if node is None:
+            node = self.root
+        if node is None:
+            return
+
+        print("    " * indent + str(node))
+        for child in node.children:
+            self.display(child, indent + 1)
+
+    def __repr__(self):
+        return f"ParseTree(root={self.root})"
+
+
 class Parser:
+    """recursive-descent parser for pysh"""
     def __init__(self):
         self.tree = ParseTree()
-        pass
-    
-    
-    
-    pass
+        self.tokens = []
+        self.pos = 0
+
+    def parse(self, tokens):
+        """Parse tokens and build the parse tree"""
+        self.tokens = tokens
+        self.pos = 0
+        self.tree.root = self.parse_statement()
+        if self.pos < len(self.tokens):
+            raise SyntaxError(f"Unexpected token: {self.tokens[self.pos]}")
+        return self.tree
+
+    def parse_statement(self):
+        """Statement -> Command"""
+        command_node = self.parse_command()
+        statement_node = Node("Statement")
+        statement_node.children.append(command_node)
+        return statement_node
+
+    def parse_command(self):
+        """Command -> COMMAND_NAME (ARG)*"""
+        if self.pos >= len(self.tokens):
+            raise SyntaxError("Expected COMMAND token")
+        if self.tokens[self.pos].type != "COMMAND":
+            raise SyntaxError(f"Expected COMMAND token, got {self.tokens[self.pos].type}")
+
+        # Create Command node (non-terminal)
+        command_node = Node("Command")
+
+        # Add COMMAND_NAME as a child
+        command_name_token = self.tokens[self.pos]
+        command_node.children.append(Node("COMMAND_NAME", command_name_token))
+        self.pos += 1
+
+        # Add all ARG or STRING_LITERAL tokens as children
+        while self.pos < len(self.tokens) and self.tokens[self.pos].type in ("ARG", "STRING_LITERAL"):
+            arg_token = self.tokens[self.pos]
+            command_node.children.append(Node("ARG", arg_token))
+            self.pos += 1
+
+        return command_node

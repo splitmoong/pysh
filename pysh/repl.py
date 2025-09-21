@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-from lexer import Lexer
+import lexer
+import parser
 
 class REPL:
     def __init__(self):
-        self.lexer = Lexer()
+        self.lexer = lexer.Lexer()
+        self.parser = parser.Parser()
 
     def run(self):
         while True:
@@ -18,8 +20,8 @@ class REPL:
                 print("Tokens:", tokens)  # for now, just debug output
 
                 # Parse tokens
-                #ast = self.parser.parse(tokens)
-                #print("AST:", ast)       # debug output
+                self.parser.parse(tokens)
+                self.parser.tree.display()
 
             except KeyboardInterrupt:
                 print()  # newline on Ctrl+C
