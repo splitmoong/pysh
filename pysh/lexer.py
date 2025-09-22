@@ -1,108 +1,123 @@
-"""
-lexer for pysh shell
-
-Token types:
-- COMMAND: First word in a command sequence (e.g., ls, echo, mkdir)
-- ARG: Arguments for commands (e.g., -l, file.txt, ^car)
-- STRING_LITERAL: Quoted strings preserving spaces ("Hello World")
-- PIPE: | operator for piping commands
-- REDIRECT_OUT: > operator for output redirection
-- REDIRECT_OUT_APPEND: >> operator for appending output
-- REDIRECT_IN: < operator for input redirection
-- SEMICOLON: ; to separate multiple commands
-- BACKGROUND: & for background execution
-- VARIABLE: $VAR environment variables
-- COMMENT: # and rest of line (ignored like us :)
-"""
-
+#a token object contains (type, lexeme)
 class Token:
-    def __init__(self, typ, value):
-        self.type = typ
-        self.value = value
-    
+    def __init__(self, ttype, lexeme):
+        self.type = ttype
+        self.lexeme = lexeme
     def __repr__(self):
-        return f"{self.type}({self.value})"
+        return f"{self.type}({self.lexeme})"
 
-class Lexer:
-    def __init__(self):
-        pass
-    
-    def tokenize(self, inp: str):
-        inp = inp.strip()
-        i = 0
-        tokens = []
+'''there are three token types in bash
+    1. reserved words 
+    exceptions like for, in, do which are only reserved given certian conditions
+    2. words
+    your commands, arguments, everything goes here mostly
+    3. operators
+    pipes, ampersand, redirections etc.
 
-        while i < len(inp):
-            if inp[i].isspace():
+see the sets below
+'''
+
+#these are the words that are always reserved
+RESERVED_ALWAYS = {
+    "if", "then", "elif", "else", "fi", "time",
+    "until", "while", "do", "done",
+    "case", "esac", "coproc", "select", "function",
+    "{", "}", "[[", "]]", "!"
+}
+
+#these are operators
+OPERATORS = {"|", "||", "&", "&&", ";", ">", "<", ">>"}
+
+#a function to classify buffer into reserved and words
+def classify_word(word, prev_tokens):
+    if word in RESERVED_ALWAYS:
+        return "RESERVED"
+    if word == "for":
+        if not prev_tokens or prev_tokens[-1].type in {"OPERATOR", "RESERVED"}:
+            return "RESERVED"
+    if word == "in":
+        if prev_tokens and prev_tokens[-1].lexeme in {"for", "case", "select"}:
+            return "RESERVED"
+    if word == "do":
+        if prev_tokens and prev_tokens[-1].lexeme in {"for", "while", "until"}:
+            return "RESERVED"
+    return "WORD"
+
+#the lexer!
+def Lexer(code):
+    tokens = []
+    state = "START"
+    buffer = []
+    i = 0
+
+    while i < len(code):
+        ch = code[i]
+
+        if state == "START":
+            if ch.isspace():
                 i += 1
                 continue
-
-            # Quoted strings
-            if inp[i] in ('"', "'"):
-                quote_char = inp[i]
-                j = i + 1
-                while j < len(inp) and inp[j] != quote_char:
-                    j += 1
-                if j < len(inp):
-                    tokens.append(Token("STRING_LITERAL", inp[i+1:j]))
-                    i = j + 1
-                else:
-                    # Unclosed quote
-                    tokens.append(Token("STRING_LITERAL", inp[i+1:]))
-                    i = len(inp)
-            
-            # Pipe
-            elif inp[i] == '|' and i+1 < len(inp) and inp[i+1] == '|':
-                tokens.append(Token("PIPE", "||"))
-                i += 2
-            elif inp[i] == '|':
-                tokens.append(Token("PIPE", "|"))
-                i += 1
-            
-            # Redirection
-            elif inp[i] == '>' and i+1 < len(inp) and inp[i+1] == '>':
-                tokens.append(Token("REDIRECT_OUT_APPEND", ">>"))
-                i += 2
-            elif inp[i] == '>':
-                tokens.append(Token("REDIRECT_OUT", ">"))
-                i += 1
-            elif inp[i] == '<':
-                tokens.append(Token("REDIRECT_IN", "<"))
-                i += 1
-            
-            # Semicolon
-            elif inp[i] == ';':
-                tokens.append(Token("SEMICOLON", ";"))
-                i += 1
-            
-            # Background
-            elif inp[i] == '&':
-                tokens.append(Token("BACKGROUND", "&"))
-                i += 1
-
-            # Variable
-            elif inp[i] == '$':
-                start = i
-                i += 1
-                while i < len(inp) and (inp[i].isalnum() or inp[i] == '_'):
-                    i += 1
-                tokens.append(Token("VARIABLE", inp[start:i]))
-            
-            # Comment
-            elif inp[i] == '#':
-                break  # ignore rest of line
-            
-            # Regular word
+            elif ch == "'":
+                state = "IN_SQUOTE"
+                buffer.clear()
+            elif ch == '"':
+                state = "IN_DQUOTE"
+                buffer.clear()
+            elif any(ch in op for op in OPERATORS):
+                state = "OP"
+                buffer.clear()
+                buffer.append(ch)
             else:
-                start = i
-                while i < len(inp) and not inp[i].isspace() and inp[i] not in '|&;<>':
-                    i += 1
-                word = inp[start:i]
-                # Determine type
-                if len(tokens) == 0 or tokens[-1].type in ("PIPE", "SEMICOLON"):
-                    token_type = "COMMAND"
-                else:
-                    token_type = "ARG"
-                tokens.append(Token(token_type, word))
-        
-        return tokens
+                state = "WORD"
+                buffer.clear()
+                buffer.append(ch)
+
+        elif state == "WORD":
+            if ch.isspace() or any(''.join(buffer)+ch == op or ch == op for op in OPERATORS):
+                word = ''.join(buffer)
+                ttype = classify_word(word, tokens)
+                tokens.append(Token(ttype, word))
+                buffer.clear()
+                state = "START"
+                continue
+            else:
+                buffer.append(ch)
+
+        elif state == "OP":
+            if ''.join(buffer)+ch in OPERATORS:
+                buffer.append(ch)
+                i += 1
+            tokens.append(Token("OPERATOR", ''.join(buffer)))
+            buffer.clear()
+            state = "START"
+            continue
+
+        elif state == "IN_SQUOTE":
+            if ch == "'":
+                tokens.append(Token("WORD", ''.join(buffer)))
+                buffer.clear()
+                state = "START"
+            else:
+                buffer.append(ch)
+
+        elif state == "IN_DQUOTE":
+            if ch == '"':
+                tokens.append(Token("WORD", ''.join(buffer)))
+                buffer.clear()
+                state = "START"
+            else:
+                buffer.append(ch)
+
+        i += 1
+
+    if buffer:
+        if state == "WORD":
+            word = ''.join(buffer)
+            ttype = classify_word(word, tokens)
+            tokens.append(Token(ttype, word))
+        elif state in {"IN_SQUOTE", "IN_DQUOTE"}:
+            raise SyntaxError("Unterminated quoted string")
+        elif state == "OP":
+            tokens.append(Token("OPERATOR", ''.join(buffer)))
+
+    return tokens

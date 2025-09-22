@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import lexer
+from lexer import Lexer
 import parser
 import checker
 import executor
@@ -16,7 +16,6 @@ HISTORY_FILE = Path.home() / ".pysh_history"
 
 class REPL:
     def __init__(self):
-        self.lexer = lexer.Lexer()
         self.parser = parser.Parser()
         self.checker = checker.SemanticChecker()
         self.executor = executor.Executor()
@@ -63,10 +62,11 @@ class REPL:
                     continue
 
                 # Tokenize input
-                tokens = self.lexer.tokenize(inp)
+                tokens = Lexer(inp)
                 if self.show_logs:
                     print(f"{LOG_COLOR}Tokens: {tokens}{RESET_COLOR}")
-
+                
+                '''
                 # Parse tokens
                 self.parser.parse(tokens)
                 if self.show_logs:
@@ -82,7 +82,8 @@ class REPL:
 
                 # Execute the command
                 self.executor.execute(self.parser.tree)
-
+                '''
+            
             except KeyboardInterrupt:
                 print()
             except EOFError:
