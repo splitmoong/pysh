@@ -8,6 +8,8 @@ import atexit
 import readline   # history (arrow key navigation)
 from pathlib import Path
 
+from commands import help
+
 # ANSI color for light grey
 LOG_COLOR = "\033[90m"
 RESET_COLOR = "\033[0m"
@@ -20,6 +22,7 @@ class REPL:
         self.checker = checker.SemanticChecker()
         self.executor = executor.Executor()
         self.show_logs = False  # Start with logs off
+        self.commands = {"bye", "help", "--log", "--nolog", "clear"}
 
         # Load history file if it exists
         if HISTORY_FILE.exists():
@@ -34,6 +37,25 @@ class REPL:
         except Exception as e:
             print(f"Warning: could not save history: {e}")
 
+    def handle_commands(self, inp : str):
+        if inp == "--log":
+            self.show_logs = True
+            return
+        if inp == "--nolog":
+            self.show_logs = False
+            return
+        if inp == "bye":
+            print("bye ฅ^>⩊<^ฅ")
+            return 0
+        if inp == "help":
+            help.run()
+            return
+        if inp == "clear":
+            os.system("clear")
+            return
+        pass        
+
+
     def run(self):
         while True:
             try:
@@ -41,27 +63,14 @@ class REPL:
                 if not inp:
                     continue
 
-                # Toggle logging
-                if inp == "--log":
-                    self.show_logs = True
-                    print("logging enabled")
-                    continue
-                elif inp == "--nolog":
-                    self.show_logs = False
-                    print("logging disabled")
-                    continue
+                # if the input is in the pysh commands / flags
+                if inp in self.commands:
+                    if self.handle_commands(inp) == 0:
+                        break
+                    else:
+                        continue
 
-                # Exit command
-                if inp == "bye":
-                    print("bye :)")
-                    break
-
-                # Clear command
-                if inp == "clear":
-                    os.system("clear")
-                    continue
-
-                # Tokenize input
+                # tokenize input
                 tokens = Lexer(inp)
                 if self.show_logs:
                     print(f"{LOG_COLOR}Tokens: {tokens}{RESET_COLOR}")
