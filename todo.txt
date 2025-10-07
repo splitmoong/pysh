@@ -1,0 +1,55 @@
+#user configurable AI. "bring your own key" and select model.
+
+    1.start always with an empty dotenv file. for the first time if the user executes a (!) text, prompt them to paste their gemini / an ai model key.
+
+    2.refactor so I dont hardcode the model names for example "gemini-2.0-flash", instead have the terminal display available models (use the library function) and let the user select one.
+
+#more solution / information oriented mode for ai.
+have a mode where user can ask specifically what the command means, sortof like the
+$man ls but insetad 
+$pysh ai how do I make a git repo here and what are the possible commands available to me
+
+
+#chain of commands (IMP)
+if a user wishes to ask for a chain of commands, like 
+"make a git repo, create readme then add everything and make the first commit"
+the ai should generate multiple commands
+
+explicit prompt argument required?
+we should be able to distinguish all the indivisual commands.
+so prompt it to begin commands with a '$' sign always
+
+#terminal history passed to ai, how? -> sensitive info? rsa keys or something don't pass that, pass some x amount of previous commands.
+
+
+#ai safety features
+
+    1.an output that demands confirmation of the user
+
+        after the user types 
+    
+        !list all the files here
+        
+        they are presented with this
+        
+        ai generated: ls -la
+        Execute? (Y/n)
+
+        the user can then hit enter (default choice Y) or n to not.
+    
+    2.since we will enable the Execute?(Y/n) in the futute, we can assign colours to the commands as green, yellow and red. visually communicating to the user how safe a given command is. 
+    
+        in addition, create a safety score, taking in account multiple factors like where is the command executing? (curr -> high, root -> low)
+        is it using any commands like rm -> low, touch -> medium etc.
+ 
+        command types  safety score
+        C (create)        medium
+        R (read)          high
+        U (update)        low
+        D (delete)        low
+
+    3. versioned / undoable commands?
+        -if the risk score is high, we can maintain a trash folder where we always copy files, and in case something goes wrong, we can restore.
+
+
+
