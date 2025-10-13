@@ -1,7 +1,7 @@
 # pysh 🐚
 
-**pysh** is python-based terminal shell inspired by bash.
- It allows users to execute built-in commands, system commands, cycle through command history and will be extended with AI-driven natural language interpretation.
+**pysh** is a python-based terminal shell inspired by bash.
+ It allows users to execute built-in commands, system commands, cycle through command history and has an AI-driven natural language interpretation.
 
 ### videos (pysh demo & Codemate.ai Builder)
 
@@ -13,6 +13,12 @@ https://github.com/user-attachments/assets/d382e86e-1bc4-4dae-8407-5d45d3b07800
 
 
 ## Features
+
+- **AI-driven command generation**
+    - Use natural-language instructions prefixed with `!` to have pysh generate shell commands.
+    ```bash
+    pysh$ ! create a temp.py here
+    ```
 
 - **Built-in commands**
   - `cd`, `cpu`, `disk`, `ls`, `mem`, `mkdir`, `pwd`, `rm`
@@ -64,6 +70,11 @@ https://github.com/user-attachments/assets/d382e86e-1bc4-4dae-8407-5d45d3b07800
     cd pysh
     ```
 
+2.a **Install Python dependencies (recommended)**
+    ```bash
+    pip install -r requirements.txt || pip install google-generativeai
+    ```
+
 3.  **Make the REPL executable:**
     ```bash
     chmod +x pysh/repl.py
@@ -100,6 +111,48 @@ https://github.com/user-attachments/assets/d382e86e-1bc4-4dae-8407-5d45d3b07800
     > On Windows, creating a global symlink like on Linux/macOS is less straightforward, so running the script directly is the recommended approach.
 
 ---
-<!--
-## 📁 Project Structure
---!>
+
+## AI integration and quick usage
+
+pysh includes a simple AI-driven command generator. You can type natural-language instructions prefixed with an exclamation mark (!) and the REPL will call the AI helper to produce a shell command which can then be executed by pysh.
+
+How it works:
+- Prefix an instruction with `!`. Example:
+    ```
+    pysh$ ! create test.text here
+    ```
+
+Important safety note:
+- AI-generated commands can be destructive. Review them before allowing execution.
+
+API key setup (paste or prompt)
+
+The AI integration requires a Gemini API key and the `google-generativeai` Python package. The project provides an interactive flow that will prompt you for a key on first use and optionally save it to a `.env` file at the repo root, or you can paste it manually.
+
+1. Install client:
+```sh
+pip install google-generativeai
+```
+
+2. Provide your API key (choose one):
+
+- Option A — Paste into `.env` (recommended for convenience):
+    - Create or open a file named `.env` in the project root and add:
+        ```env
+        GEMINI_API_KEY=your_api_key_here
+        ```
+    - The `ai.managekeys` helper will read this value when present.
+
+- Option B — Let pysh prompt and save it for you:
+    - On first AI call (when no key is available), pysh will prompt you to paste the key. The `ai.managekeys.load_or_check_ai_api_key` helper handles prompting and storing the key.
+
+
+3. Verify: run pysh and try a simple AI prompt:
+```sh
+pysh$ !list all hidden files in this directory
+```
+
+TODO / Improvements
+- Add an explicit confirmation step before executing AI-generated commands.
+- Add a safety heuristic to detect high-risk commands and refuse or highlight them.
+- Allow selecting different Gemini models instead of a hardcoded model name.
