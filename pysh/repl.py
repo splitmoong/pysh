@@ -15,7 +15,7 @@ import executor
 
 
 from ai.ai import AI
-import contextlib
+import ai.managekeys
 
 # ANSI color for light grey
 LOG_COLOR = "\033[90m"
@@ -25,6 +25,7 @@ HISTORY_FILE = Path.home() / ".pysh_history"
 
 class REPL:
     def __init__(self):
+        
         self.lexer = lexer.Lexer()
         self.parser = parser.Parser()
         self.checker = checker.SemanticChecker()
@@ -92,9 +93,11 @@ class REPL:
                         print("Usage: !<instruction>")
                         continue
                     try:
+                        # Ensure API key is loaded (and prompt shown)
+                        ai.managekeys.load_or_check_ai_api_key()
+
                         # pass the user's instruction (user_cmd) to the AI
-                        with open(os.devnull, "w") as f, contextlib.redirect_stderr(f), contextlib.redirect_stdout(f):
-                            ai_output = AI.call_gemini(user_cmd)
+                        ai_output = AI.call_gemini(user_cmd)
                         if self.show_logs:
                             print(f"{LOG_COLOR}AI generated: {ai_output}{RESET_COLOR}")
                         # Pass AI output into the normal pipeline
