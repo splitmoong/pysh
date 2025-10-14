@@ -11,7 +11,15 @@ https://drive.google.com/drive/folders/1Pjl8n9iTkAs59wZhGKMv-5qqqct0PgPE?usp=sha
 
 https://github.com/user-attachments/assets/d382e86e-1bc4-4dae-8407-5d45d3b07800
 
+## Index
 
+- [Features](#features)
+- [Installation](#installation)
+- [AI integration and quick usage](#ai-integration-and-quick-usage)
+- [Roadmap](#roadmap)
+
+
+<a id="features"></a>
 ## Features
 
 - **AI-driven command generation**
@@ -56,8 +64,10 @@ https://github.com/user-attachments/assets/d382e86e-1bc4-4dae-8407-5d45d3b07800
 
 ---
 
+<a id="installation"></a>
 ## Installation
 
+<a id="linux-macos"></a>
 ### Linux & macOS
 
 1.  **Clone the repository:**
@@ -112,6 +122,7 @@ https://github.com/user-attachments/assets/d382e86e-1bc4-4dae-8407-5d45d3b07800
 
 ---
 
+<a id="ai"></a>
 ## AI integration and quick usage
 
 pysh includes a simple AI-driven command generator. You can type natural-language instructions prefixed with an exclamation mark (!) and the REPL will call the AI helper to produce a shell command which can then be executed by pysh.
@@ -156,3 +167,25 @@ TODO / Improvements
 - Add an explicit confirmation step before executing AI-generated commands.
 - Add a safety heuristic to detect high-risk commands and refuse or highlight them.
 - Allow selecting different Gemini models instead of a hardcoded model name.
+
+<a id="roadmap"></a>
+## Roadmap
+
+
+```
+○ [HERE] Add support for chaining multiple commands using ';', '&&', '||' and '&' (sequential, conditional and background).  
+|   
+|
+○ Add support for more API keys, currently only gemini is supported. make a more graphical cli ui for choosing model, pasting key, managing keys etc.
+|
+|
+○ Add support for local models using Ollama.
+|
+|   
+○ Rework the Tokenization to be closer to bash (3 types), use ply (python-yacc-lex) module instead of manually building parse tree. just write the grammar rules.
+|
+|
+...
+```
+
+
