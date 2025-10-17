@@ -1,29 +1,27 @@
 """
-semantic checker for pysh shell
-
-checks the meaning of commands and arguments after parsing.
-raises errors for invalid commands, missing files/directories, or invalid environment variables.
+semantic checker for pysh
 """
 
 import os
 import shutil
-from parser import Node, ParseTree
+from parser.node import Node
 
 # define built-in commands for mandatory requirements
 BUILTIN_COMMANDS = {"cd", "cpu", "disk", "ls", "mem", "mkdir", "pwd", "rm"}
+
 
 class SemanticChecker:
     def __init__(self):
         pass
 
-    def check(self, tree: ParseTree):
+    def check(self, root: Node):
         """
         Entry point for semantic analysis.
-        Traverses the parse tree and checks each node.
+        Accepts the AST root node (usually the Statement node) and traverses it.
         """
-        if tree.root is None:
+        if root is None:
             raise RuntimeError("Empty parse tree")
-        self.check_node(tree.root)
+        self.check_node(root)
 
     def check_node(self, node: Node):
         """
@@ -33,7 +31,7 @@ class SemanticChecker:
             self.check_command(node)
         else:
             # Recurse through children
-            for child in node.children:
+            for child in getattr(node, "children", []):
                 self.check_node(child)
 
     def check_command(self, command_node: Node):
@@ -42,12 +40,12 @@ class SemanticChecker:
         - Validate COMMAND_NAME
         - Validate ARGs for built-ins
         """
-        if not command_node.children:
+        if not getattr(command_node, "children", None):
             raise RuntimeError("Empty Command node")
 
         # First child is COMMAND_NAME
         cmd_name_node = command_node.children[0]
-        cmd_name = cmd_name_node.token.value
+        cmd_name = getattr(cmd_name_node.token, "value", cmd_name_node.token)
 
         # Check if command exists
         if not self.command_exists(cmd_name):
@@ -55,7 +53,7 @@ class SemanticChecker:
 
         # Check arguments for built-ins
         for arg_node in command_node.children[1:]:
-            arg_value = arg_node.token.value
+            arg_value = getattr(arg_node.token, "value", arg_node.token)
             self.check_argument(cmd_name, arg_value)
 
     def command_exists(self, cmd_name: str) -> bool:
@@ -80,4 +78,3 @@ class SemanticChecker:
             # Optional: check if directory already exists
             pass
         # For other commands like ls, pwd, accept args as-is
-        # Variables ($VAR) can be handled here if you implement expansion

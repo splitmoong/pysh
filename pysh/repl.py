@@ -5,13 +5,19 @@ import atexit
 import readline
 from pathlib import Path
 
-# Ensure project root is in sys.path (for ai.py and others)
+# ensure project root is in sys.path
 sys.path.append(str(Path(__file__).resolve().parent))
 
-import lexer
-import parser
-import checker
-import executor
+#import lex file and the wrapper class
+from lexer.lexer import lexer as lexer
+from lexer.logginglexer import LoggingLexer
+
+#import yacc file
+from parser.parser import parser as parser
+from parser.display import display_parse_tree
+
+from checker import SemanticChecker
+from executor import Executor
 
 
 from ai.ai import AI
@@ -26,12 +32,17 @@ HISTORY_FILE = Path.home() / ".pysh_history"
 class REPL:
     def __init__(self):
         
-        self.lexer = lexer.Lexer()
-        self.parser = parser.Parser()
-        self.checker = checker.SemanticChecker()
-        self.executor = executor.Executor()
+        self.lexer = LoggingLexer(lexer)
+        self.parser = parser
+        # instantiate checker and executor that accept AST root nodes
+        
+        self.checker = SemanticChecker()
+        self.executor = Executor()
+
+        # log flag
         self.show_logs = False
 
+        #creating the .pysh_history file if doesnt exist
         if HISTORY_FILE.exists():
             readline.read_history_file(HISTORY_FILE)
         atexit.register(self._save_history)
@@ -43,19 +54,20 @@ class REPL:
             print(f"Warning: could not save history: {e}")
 
     def process_command(self, cmd: str):
-        """Process any command string through lexer, parser, checker, executor."""
         try:
-            tokens = self.lexer.tokenize(cmd)
-            if self.show_logs:
-                print(f"{LOG_COLOR}Tokens: {tokens}{RESET_COLOR}")
+            self.lexer.is_command_position = True
+            self.lexer.lineno = 1
+            self.lexer.input(cmd)
+            ast_root = self.parser.parse(lexer=self.lexer)
 
-            self.parser.parse(tokens)
             if self.show_logs:
+                print(f"{LOG_COLOR}Tokens: {self.lexer.token_log}{RESET_COLOR}")
                 print(f"{LOG_COLOR}Parse tree:{RESET_COLOR}")
-                self.parser.tree.display()
+                display_parse_tree(ast_root)
 
-            self.checker.check(self.parser.tree)
-            self.executor.execute(self.parser.tree)
+            self.checker.check(ast_root)
+            self.executor.execute(ast_root)
+
         except RuntimeError as e:
             print(f"Semantic error: {e}")
         except Exception as e:
