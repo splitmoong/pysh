@@ -21,9 +21,9 @@ class SemanticChecker:
         """
         if root is None:
             raise RuntimeError("Empty parse tree")
-        self.check_node(root)
+        self._check(root)
 
-    def check_node(self, node: Node):
+    def _check(self, node: Node):
         """
         Recursively check a node and its children.
         """
@@ -32,7 +32,7 @@ class SemanticChecker:
         else:
             # Recurse through children
             for child in getattr(node, "children", []):
-                self.check_node(child)
+                self._check(child)
 
     def check_command(self, command_node: Node):
         """
